@@ -1,0 +1,126 @@
+============================================================
+  GNN for Drug–Drug Interaction Prediction
+  AI-600 Deep Learning — Project #10  (Final)
+============================================================
+Dataset: 1514 drugs, 48514 DDI edges
+Fetching SMILES for 176 drugs from PubChem …
+  (This is a one-time operation; results will be cached.)
+PubChem:   0%|          | 0/176 [00:00<?, ?it/s]PubChem:   1%|          | 1/176 [00:03<10:08,  3.48s/it]PubChem:   2%|▏         | 3/176 [00:03<02:44,  1.05it/s]PubChem:   3%|▎         | 5/176 [00:04<01:37,  1.75it/s]PubChem:   3%|▎         | 6/176 [00:04<01:45,  1.61it/s]PubChem:   4%|▍         | 7/176 [00:04<01:24,  2.01it/s]PubChem:   5%|▌         | 9/176 [00:05<00:50,  3.28it/s]PubChem:   6%|▌         | 10/176 [00:05<00:49,  3.35it/s]PubChem:   6%|▋         | 11/176 [00:06<01:16,  2.16it/s]PubChem:   7%|▋         | 13/176 [00:06<00:53,  3.04it/s]PubChem:   8%|▊         | 14/176 [00:06<00:49,  3.30it/s]PubChem:   9%|▊         | 15/176 [00:07<00:46,  3.44it/s]PubChem:   9%|▉         | 16/176 [00:07<01:00,  2.65it/s]PubChem:  10%|█         | 18/176 [00:08<00:48,  3.23it/s]PubChem:  11%|█▏        | 20/176 [00:08<00:44,  3.54it/s]PubChem:  12%|█▏        | 21/176 [00:09<00:48,  3.20it/s]PubChem:  13%|█▎        | 23/176 [00:09<00:42,  3.56it/s]PubChem:  14%|█▎        | 24/176 [00:09<00:42,  3.55it/s]PubChem:  14%|█▍        | 25/176 [00:10<00:48,  3.10it/s]PubChem:  15%|█▍        | 26/176 [00:10<00:49,  3.02it/s]PubChem:  16%|█▌        | 28/176 [00:10<00:36,  4.01it/s]PubChem:  16%|█▋        | 29/176 [00:11<00:35,  4.11it/s]PubChem:  17%|█▋        | 30/176 [00:11<00:43,  3.38it/s]PubChem:  18%|█▊        | 31/176 [00:11<00:46,  3.14it/s]PubChem:  19%|█▉        | 33/176 [00:12<00:35,  3.98it/s]PubChem:  19%|█▉        | 34/176 [00:12<00:40,  3.49it/s]PubChem:  20%|█▉        | 35/176 [00:13<00:46,  3.05it/s]PubChem:  20%|██        | 36/176 [00:13<00:39,  3.55it/s]PubChem:  21%|██        | 37/176 [00:13<00:42,  3.30it/s]PubChem:  22%|██▏       | 39/176 [00:14<00:43,  3.15it/s]PubChem:  23%|██▎       | 40/176 [00:14<00:47,  2.86it/s]PubChem:  24%|██▍       | 42/176 [00:14<00:32,  4.07it/s]PubChem:  24%|██▍       | 43/176 [00:15<00:36,  3.62it/s]PubChem:  25%|██▌       | 44/176 [00:15<00:43,  3.04it/s]PubChem:  26%|██▌       | 45/176 [00:16<00:41,  3.19it/s]PubChem:  27%|██▋       | 47/176 [00:16<00:36,  3.55it/s]PubChem:  27%|██▋       | 48/176 [00:17<00:45,  2.84it/s]PubChem:  28%|██▊       | 49/176 [00:17<00:36,  3.44it/s]PubChem:  28%|██▊       | 50/176 [00:17<00:41,  3.00it/s]PubChem:  30%|██▉       | 52/176 [00:18<00:35,  3.49it/s]PubChem:  30%|███       | 53/176 [00:18<00:37,  3.29it/s]PubChem:  31%|███       | 54/176 [00:18<00:31,  3.90it/s]PubChem:  31%|███▏      | 55/176 [00:18<00:34,  3.55it/s]PubChem:  32%|███▏      | 57/176 [00:19<00:28,  4.17it/s]PubChem:  33%|███▎      | 58/176 [00:19<00:37,  3.16it/s]PubChem:  34%|███▎      | 59/176 [00:20<00:33,  3.45it/s]PubChem:  34%|███▍      | 60/176 [00:20<00:36,  3.14it/s]PubChem:  35%|███▌      | 62/176 [00:20<00:24,  4.66it/s]PubChem:  36%|███▌      | 63/176 [00:21<00:43,  2.58it/s]PubChem:  36%|███▋      | 64/176 [00:22<00:48,  2.31it/s]PubChem:  37%|███▋      | 65/176 [00:23<01:07,  1.64it/s]PubChem:  38%|███▊      | 66/176 [00:23<00:56,  1.94it/s]PubChem:  39%|███▉      | 69/176 [00:23<00:28,  3.74it/s]PubChem:  40%|███▉      | 70/176 [00:24<00:44,  2.39it/s]PubChem:  40%|████      | 71/176 [00:24<00:37,  2.80it/s]PubChem:  41%|████▏     | 73/176 [00:25<00:28,  3.66it/s]PubChem:  42%|████▏     | 74/176 [00:25<00:25,  4.00it/s]PubChem:  43%|████▎     | 75/176 [00:26<00:37,  2.72it/s]PubChem:  43%|████▎     | 76/176 [00:26<00:30,  3.23it/s]PubChem:  44%|████▍     | 78/176 [00:26<00:28,  3.46it/s]PubChem:  45%|████▌     | 80/176 [00:27<00:31,  3.07it/s]PubChem:  47%|████▋     | 82/176 [00:27<00:21,  4.35it/s]PubChem:  47%|████▋     | 83/176 [00:28<00:25,  3.63it/s]PubChem:  48%|████▊     | 85/176 [00:28<00:28,  3.19it/s]PubChem:  49%|████▉     | 87/176 [00:28<00:20,  4.41it/s]PubChem:  50%|█████     | 88/176 [00:29<00:23,  3.75it/s]PubChem:  51%|█████     | 89/176 [00:29<00:22,  3.81it/s]PubChem:  51%|█████     | 90/176 [00:30<00:28,  2.98it/s]PubChem:  52%|█████▏    | 92/176 [00:30<00:21,  3.83it/s]PubChem:  53%|█████▎    | 93/176 [00:30<00:21,  3.94it/s]PubChem:  53%|█████▎    | 94/176 [00:31<00:27,  3.02it/s]PubChem:  54%|█████▍    | 95/176 [00:31<00:25,  3.18it/s]PubChem:  55%|█████▍    | 96/176 [00:31<00:23,  3.37it/s]PubChem:  55%|█████▌    | 97/176 [00:32<00:25,  3.05it/s]PubChem:  56%|█████▌    | 98/176 [00:32<00:25,  3.01it/s]PubChem:  56%|█████▋    | 99/176 [00:32<00:22,  3.47it/s]PubChem:  57%|█████▋    | 100/176 [00:33<00:38,  1.97it/s]PubChem:  58%|█████▊    | 102/176 [00:33<00:23,  3.22it/s]PubChem:  59%|█████▊    | 103/176 [00:34<00:19,  3.77it/s]PubChem:  59%|█████▉    | 104/176 [00:34<00:21,  3.40it/s]PubChem:  60%|█████▉    | 105/176 [00:35<00:29,  2.38it/s]PubChem:  61%|██████▏   | 108/176 [00:35<00:15,  4.27it/s]PubChem:  62%|██████▏   | 109/176 [00:36<00:21,  3.06it/s]PubChem:  62%|██████▎   | 110/176 [00:36<00:22,  2.91it/s]PubChem:  64%|██████▍   | 113/176 [00:36<00:13,  4.60it/s]PubChem:  65%|██████▍   | 114/176 [00:37<00:18,  3.33it/s]PubChem:  65%|██████▌   | 115/176 [00:37<00:20,  3.05it/s]PubChem:  67%|██████▋   | 118/176 [00:38<00:12,  4.66it/s]PubChem:  68%|██████▊   | 119/176 [00:39<00:19,  2.90it/s]PubChem:  68%|██████▊   | 120/176 [00:39<00:19,  2.85it/s]PubChem:  70%|███████   | 124/176 [00:40<00:15,  3.32it/s]PubChem:  71%|███████   | 125/176 [00:40<00:15,  3.33it/s]PubChem:  73%|███████▎  | 129/176 [00:41<00:13,  3.58it/s]PubChem:  74%|███████▍  | 130/176 [00:42<00:14,  3.16it/s]PubChem:  76%|███████▌  | 134/176 [00:43<00:11,  3.55it/s]PubChem:  77%|███████▋  | 135/176 [00:43<00:12,  3.28it/s]PubChem:  78%|███████▊  | 138/176 [00:43<00:07,  4.78it/s]PubChem:  79%|███████▉  | 139/176 [00:44<00:10,  3.46it/s]PubChem:  80%|███████▉  | 140/176 [00:45<00:11,  3.19it/s]PubChem:  81%|████████  | 142/176 [00:45<00:07,  4.39it/s]PubChem:  82%|████████▏ | 144/176 [00:45<00:09,  3.45it/s]PubChem:  82%|████████▏ | 145/176 [00:46<00:11,  2.82it/s]PubChem:  84%|████████▍ | 148/176 [00:46<00:06,  4.49it/s]PubChem:  85%|████████▍ | 149/176 [00:47<00:08,  3.11it/s]PubChem:  85%|████████▌ | 150/176 [00:47<00:08,  3.00it/s]PubChem:  87%|████████▋ | 153/176 [00:48<00:06,  3.56it/s]PubChem:  88%|████████▊ | 154/176 [00:48<00:06,  3.61it/s]PubChem:  88%|████████▊ | 155/176 [00:49<00:06,  3.25it/s]PubChem:  90%|████████▉ | 158/176 [00:49<00:04,  3.88it/s]PubChem:  90%|█████████ | 159/176 [00:50<00:05,  3.38it/s]PubChem:  91%|█████████ | 160/176 [00:50<00:04,  3.40it/s]PubChem:  93%|█████████▎| 163/176 [00:51<00:03,  3.98it/s]PubChem:  93%|█████████▎| 164/176 [00:51<00:03,  3.30it/s]PubChem:  94%|█████████▍| 165/176 [00:52<00:03,  2.98it/s]PubChem:  95%|█████████▌| 168/176 [00:52<00:02,  3.73it/s]PubChem:  96%|█████████▌| 169/176 [00:53<00:01,  3.64it/s]PubChem:  97%|█████████▋| 170/176 [00:53<00:01,  3.22it/s]PubChem:  98%|█████████▊| 173/176 [00:54<00:00,  3.37it/s]PubChem:  99%|█████████▉| 174/176 [00:54<00:00,  3.56it/s]PubChem:  99%|█████████▉| 175/176 [00:54<00:00,  3.63it/s]PubChem: 100%|██████████| 176/176 [00:54<00:00,  3.21it/s]
+  Cached 1338 SMILES to data/drug_smiles.csv
+Valid drugs (with SMILES): 1338 / 1514
+Valid DDI edges (both drugs have SMILES): 41820
+Split → train pos edges: 33456, val pos: 4182, test pos: 4182
+
+Node feature dim : 2048
+Number of nodes  : 1338
+
+Using device: mps
+============================================================
+
+Training: MLP
+----------------------------------------
+  [MLP] Epoch   1 | Loss 0.6934 | Val AUC 0.7704 | Val AP 0.7649 | 1.8s
+  [MLP] Epoch  25 | Loss 0.2152 | Val AUC 0.9414 | Val AP 0.9316 | 18.3s
+  [MLP] Epoch  50 | Loss 0.0551 | Val AUC 0.9632 | Val AP 0.9568 | 35.3s
+  [MLP] Epoch  75 | Loss 0.0265 | Val AUC 0.9663 | Val AP 0.9609 | 52.4s
+  [MLP] Epoch 100 | Loss 0.0139 | Val AUC 0.9689 | Val AP 0.9622 | 70.0s
+  [MLP] Epoch 125 | Loss 0.0093 | Val AUC 0.9703 | Val AP 0.9647 | 87.6s
+  [MLP] Epoch 150 | Loss 0.0072 | Val AUC 0.9707 | Val AP 0.9649 | 104.9s
+  ✓ MLP → Test AUC: 0.9660 | Test AP: 0.9584
+
+Training: GCN+Dot
+----------------------------------------
+  [GCN+Dot] Epoch   1 | Loss 1.5983 | Val AUC 0.8731 | Val AP 0.8635 | 0.3s
+  [GCN+Dot] Early stop at epoch 21
+  ✓ GCN+Dot → Test AUC: 0.8712 | Test AP: 0.8675
+
+Training: GCN+MLP
+----------------------------------------
+  [GCN+MLP] Epoch   1 | Loss 0.6950 | Val AUC 0.8499 | Val AP 0.8487 | 0.2s
+  [GCN+MLP] Epoch  25 | Loss 0.3494 | Val AUC 0.8979 | Val AP 0.8824 | 4.3s
+  [GCN+MLP] Epoch  50 | Loss 0.2895 | Val AUC 0.9432 | Val AP 0.9368 | 8.8s
+  [GCN+MLP] Epoch  75 | Loss 0.2560 | Val AUC 0.9601 | Val AP 0.9570 | 13.2s
+  [GCN+MLP] Epoch 100 | Loss 0.2230 | Val AUC 0.9634 | Val AP 0.9595 | 17.8s
+  [GCN+MLP] Epoch 125 | Loss 0.2007 | Val AUC 0.9680 | Val AP 0.9655 | 22.4s
+  [GCN+MLP] Epoch 150 | Loss 0.1905 | Val AUC 0.9694 | Val AP 0.9673 | 27.4s
+  ✓ GCN+MLP → Test AUC: 0.9675 | Test AP: 0.9655
+
+Training: GIN+Dot
+----------------------------------------
+  [GIN+Dot] Epoch   1 | Loss 5.7085 | Val AUC 0.6249 | Val AP 0.5718 | 0.8s
+  [GIN+Dot] Epoch  25 | Loss 1.5309 | Val AUC 0.8950 | Val AP 0.8914 | 15.3s
+  [GIN+Dot] Early stop at epoch 44
+  ✓ GIN+Dot → Test AUC: 0.8618 | Test AP: 0.8109
+
+Training: GIN+MLP
+----------------------------------------
+  [GIN+MLP] Epoch   1 | Loss 0.6968 | Val AUC 0.8238 | Val AP 0.8241 | 0.7s
+  [GIN+MLP] Epoch  25 | Loss 0.4110 | Val AUC 0.8884 | Val AP 0.8694 | 16.2s
+  [GIN+MLP] Epoch  50 | Loss 0.3296 | Val AUC 0.9234 | Val AP 0.9125 | 32.9s
+  [GIN+MLP] Epoch  75 | Loss 0.2829 | Val AUC 0.9514 | Val AP 0.9454 | 49.1s
+  [GIN+MLP] Epoch 100 | Loss 0.2594 | Val AUC 0.9532 | Val AP 0.9442 | 65.6s
+  [GIN+MLP] Epoch 125 | Loss 0.2447 | Val AUC 0.9608 | Val AP 0.9557 | 82.7s
+  [GIN+MLP] Epoch 150 | Loss 0.2319 | Val AUC 0.9619 | Val AP 0.9557 | 98.6s
+  ✓ GIN+MLP → Test AUC: 0.9606 | Test AP: 0.9541
+
+-------------------------------------------
+Model          Val AUC   Test AUC   Test AP
+-------------------------------------------
+MLP             0.9707     0.9660    0.9584
+GCN+Dot         0.8731     0.8712    0.8675
+GCN+MLP         0.9723     0.9675    0.9655
+GIN+Dot         0.8957     0.8618    0.8109
+GIN+MLP         0.9634     0.9606    0.9541
+-------------------------------------------
+
+Best model: GCN+MLP  (Test AUC = 0.9675)
+
+Training curves saved → results/training_curves.png
+Results CSV saved → results/results.csv
+
+============================================================
+CALIBRATION & UNCERTAINTY  (GCN+MLP, best model)
+============================================================
+Traceback (most recent call last):
+  File "/Users/usmannaeem/Github/personal/dl-proj/run_experiments.py", line 138, in <module>
+    main()
+    ~~~~^^
+  File "/Users/usmannaeem/Github/personal/dl-proj/run_experiments.py", line 80, in main
+    logits = best_model(
+        test_data.x.to(device),
+        test_data.edge_index.to(device),
+        test_data.edge_label_index.to(device),
+    )
+  File "/Users/usmannaeem/Github/personal/dl-proj/.venv/lib/python3.13/site-packages/torch/nn/modules/module.py", line 1779, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "/Users/usmannaeem/Github/personal/dl-proj/.venv/lib/python3.13/site-packages/torch/nn/modules/module.py", line 1790, in _call_impl
+    return forward_call(*args, **kwargs)
+  File "/Users/usmannaeem/Github/personal/dl-proj/src/models.py", line 127, in forward
+    z = self.encode(x, edge_index)
+  File "/Users/usmannaeem/Github/personal/dl-proj/src/models.py", line 121, in encode
+    return self.encoder(x, edge_index)
+           ~~~~~~~~~~~~^^^^^^^^^^^^^^^
+  File "/Users/usmannaeem/Github/personal/dl-proj/.venv/lib/python3.13/site-packages/torch/nn/modules/module.py", line 1779, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "/Users/usmannaeem/Github/personal/dl-proj/.venv/lib/python3.13/site-packages/torch/nn/modules/module.py", line 1790, in _call_impl
+    return forward_call(*args, **kwargs)
+  File "/Users/usmannaeem/Github/personal/dl-proj/src/models.py", line 32, in forward
+    h = self.conv1(x, edge_index)
+  File "/Users/usmannaeem/Github/personal/dl-proj/.venv/lib/python3.13/site-packages/torch/nn/modules/module.py", line 1779, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "/Users/usmannaeem/Github/personal/dl-proj/.venv/lib/python3.13/site-packages/torch/nn/modules/module.py", line 1790, in _call_impl
+    return forward_call(*args, **kwargs)
+  File "/Users/usmannaeem/Github/personal/dl-proj/.venv/lib/python3.13/site-packages/torch_geometric/nn/conv/gcn_conv.py", line 260, in forward
+    x = self.lin(x)
+  File "/Users/usmannaeem/Github/personal/dl-proj/.venv/lib/python3.13/site-packages/torch/nn/modules/module.py", line 1779, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "/Users/usmannaeem/Github/personal/dl-proj/.venv/lib/python3.13/site-packages/torch/nn/modules/module.py", line 1790, in _call_impl
+    return forward_call(*args, **kwargs)
+  File "/Users/usmannaeem/Github/personal/dl-proj/.venv/lib/python3.13/site-packages/torch_geometric/nn/dense/linear.py", line 127, in forward
+    return F.linear(x, self.weight, self.bias)
+           ~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^
+RuntimeError: Tensor for argument weight is on cpu but expected on mps

@@ -1,0 +1,4 @@
+config,val_auc,test_auc,test_ap
+layers_1,0.9611,0.96,0.9563
+layers_2,0.9598,0.9602,0.9559
+layers_3,0.9408,0.9402,0.9323

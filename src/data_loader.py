@@ -79,37 +79,39 @@ def _fetch_single_smiles(drug_id: str):
 
 def _fetch_smiles_parallel(drug_ids: list, cache_path: str) -> dict:
     """Fetch SMILES for all drug_ids, using disk cache to avoid re-fetching."""
-    # Load existing cache
-    cached = {}
+    # Load existing cache (including previously-tried-but-failed entries)
+    cached_all = {}   # drug_id -> smiles_or_None  (tracks all attempted drugs)
     if os.path.exists(cache_path):
         df = pd.read_csv(cache_path)
-        cached = dict(zip(df["drug_id"], df["smiles"]))
-        cached = {k: v for k, v in cached.items() if isinstance(v, str) and v}
+        for _, row in df.iterrows():
+            v = row["smiles"]
+            cached_all[row["drug_id"]] = v if isinstance(v, str) and v else None
 
-    missing = [d for d in drug_ids if d not in cached]
+    # Only fetch drugs we have never attempted before
+    missing = [d for d in drug_ids if d not in cached_all]
     if missing:
         print(f"Fetching SMILES for {len(missing)} drugs from PubChem …")
         print("  (This is a one-time operation; results will be cached.)")
-        results = {}
         with ThreadPoolExecutor(max_workers=MAX_WORKERS) as ex:
             futures = {ex.submit(_fetch_single_smiles, d): d for d in missing}
             for i, fut in enumerate(
                 tqdm(as_completed(futures), total=len(missing), desc="PubChem")
             ):
                 drug_id, smiles = fut.result()
-                if smiles:
-                    results[drug_id] = smiles
-                # gentle rate-limit: pause briefly every 5 completed requests
+                cached_all[drug_id] = smiles  # store None for failures too
                 if i % 5 == 4:
                     time.sleep(REQUEST_DELAY)
 
-        cached.update(results)
-        # Save updated cache
+        # Persist all entries (including None) so failures aren't retried
         df = pd.DataFrame(
-            [{"drug_id": k, "smiles": v} for k, v in cached.items()]
+            [{"drug_id": k, "smiles": v if v else ""} for k, v in cached_all.items()]
         )
         df.to_csv(cache_path, index=False)
-        print(f"  Cached {len(cached)} SMILES to {cache_path}")
+        valid_count = sum(1 for v in cached_all.values() if v)
+        print(f"  Cached {valid_count} SMILES (+ {len(cached_all)-valid_count} failures) to {cache_path}")
+
+    # Return only drugs with valid SMILES
+    cached = {k: v for k, v in cached_all.items() if v}
 
     return cached
 
@@ -129,7 +131,8 @@ def _morgan_fp(smiles: str) -> np.ndarray:
 
 # ── public API ─────────────────────────────────────────────────────────────────
 
-def load_dataset(data_dir: str = "data", seed: int = 42):
+def load_dataset(data_dir: str = "data", seed: int = 42,
+                 neg_sampling_ratio: float = 1.0):
     """
     Load and preprocess the BioSNAP DDI dataset.
 
@@ -196,7 +199,7 @@ def load_dataset(data_dir: str = "data", seed: int = 42):
         num_test=0.1,
         is_undirected=True,
         add_negative_train_samples=True,
-        neg_sampling_ratio=1.0,
+        neg_sampling_ratio=neg_sampling_ratio,
     )
     train_data, val_data, test_data = splitter(data)
 

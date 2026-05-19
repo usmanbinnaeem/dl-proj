@@ -202,3 +202,67 @@ def build_model(name: str, in_channels: int = 2048) -> nn.Module:
 
 
 ALL_MODELS = ["MLP", "GCN+Dot", "GCN+MLP", "GIN+Dot", "GIN+MLP"]
+
+
+# ── Ablation models ────────────────────────────────────────────────────────────
+
+class FlexGCNEncoder(nn.Module):
+    """
+    GCN encoder with configurable layer depth and embedding dimension.
+    Used for Ablation A (embed dim) and Ablation B (num layers).
+    """
+
+    def __init__(self, in_channels: int, hidden: int = 256, out: int = 64,
+                 num_layers: int = 2, dropout: float = 0.3):
+        super().__init__()
+        assert num_layers >= 1
+        if num_layers == 1:
+            dims = [in_channels, out]
+        else:
+            dims = [in_channels] + [hidden] * (num_layers - 1) + [out]
+
+        self.convs = nn.ModuleList(
+            [GCNConv(dims[i], dims[i + 1]) for i in range(num_layers)]
+        )
+        self.bns = nn.ModuleList(
+            [nn.BatchNorm1d(dims[i + 1]) for i in range(num_layers)]
+        )
+        self.num_layers = num_layers
+        self.dropout = dropout
+
+    def forward(self, x, edge_index):
+        h = x
+        for i, (conv, bn) in enumerate(zip(self.convs, self.bns)):
+            h = conv(h, edge_index)
+            h = bn(h)
+            if i < self.num_layers - 1:
+                h = F.relu(h)
+                h = F.dropout(h, p=self.dropout, training=self.training)
+        return h  # [N, out]
+
+
+class LearnableGCNMLP(nn.Module):
+    """
+    GCN+MLP using learnable node embeddings instead of Morgan fingerprints.
+    Ablation C: tests whether molecular features are necessary.
+    Nodes are identified by position index; no chemistry is encoded.
+    """
+
+    def __init__(self, num_nodes: int, hidden: int = 256, out: int = 64,
+                 dropout: float = 0.3):
+        super().__init__()
+        self.embedding = nn.Embedding(num_nodes, hidden)
+        self.conv      = GCNConv(hidden, out)
+        self.bn        = nn.BatchNorm1d(out)
+        self.dropout   = dropout
+        self.decoder   = MLPDecoder(embed_dim=out, dropout=dropout)
+
+    def forward(self, x, edge_index, edge_label_index):
+        # x is only used to retrieve device and num_nodes;
+        # actual features come from the learnable embedding table.
+        node_ids = torch.arange(x.shape[0], device=x.device)
+        h = self.embedding(node_ids)                               # [N, hidden]
+        h = F.dropout(h, p=self.dropout, training=self.training)
+        h = self.conv(h, edge_index)                               # [N, out]
+        h = self.bn(h)
+        return self.decoder(h, edge_label_index)
