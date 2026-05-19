@@ -22,9 +22,11 @@ from sklearn.metrics import roc_auc_score, average_precision_score
 from data_loader import load_dataset
 from models import build_model
 from train import run_all_experiments, get_device
+from train import save_model_bundle
 from utils import (
     expected_calibration_error, mc_dropout_predict,
     plot_ablation_results, plot_ood_comparison,
+    plot_reliability_diagram, plot_uncertainty_comparison,
     save_ablation_csv,
 )
 from ablation import run_all_ablations
@@ -112,6 +114,20 @@ def main():
         writer.writerow(["MC_mean_uncertainty", round(float(avg_unc), 4)])
     print(f"  Saved → {calib_path}")
 
+    # Reliability diagram
+    plot_reliability_diagram(
+        det_probs, test_labels,
+        save_path="results/reliability_diagram.png",
+        ece=ece,
+    )
+
+    # Save model bundle + graph data (for DDIPredictor)
+    save_model_bundle(
+        best_model, in_channels, drug_ids,
+        data.x, data.edge_index,
+        save_path="results/model_bundle.pt",
+    )
+
     # ── OOD evaluation ─────────────────────────────────────────────────────
     print("\n" + "="*60)
     print("OOD EVALUATION")
@@ -119,9 +135,18 @@ def main():
     ood_results = run_ood_evaluation(
         data, iid_results_stub, in_channels,
         data_dir="data", ood_fraction=0.15, epochs=150,
+        iid_test_data=test_data,
     )
     save_ood_csv(ood_results, save_path="results/ood_results.csv")
     plot_ood_comparison(ood_results, save_path="results/ood_comparison.png")
+
+    # IID vs OOD uncertainty comparison plot
+    if "uncertainty" in ood_results:
+        unc = ood_results["uncertainty"]
+        plot_uncertainty_comparison(
+            unc["iid_stds"], unc["ood_stds"],
+            save_path="results/uncertainty_comparison.png",
+        )
 
     # ── Ablation studies ───────────────────────────────────────────────────
     if not args.skip_ablations:

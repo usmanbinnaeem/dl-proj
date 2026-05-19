@@ -237,8 +237,8 @@ and computing the confidence–accuracy gap:
 \toprule
 Metric & GCN+MLP \\
 \midrule
-ECE (deterministic)           & 0.0206 \\
-MC Dropout mean uncertainty   & 0.0530 \\
+ECE (deterministic)           & 0.0156 \\
+MC Dropout mean uncertainty   & 0.0518 \\
 \bottomrule
 \end{tabular}
 \end{center}
@@ -246,7 +246,20 @@ MC Dropout mean uncertainty   & 0.0530 \\
 \noindent MC Dropout runs 20 stochastic forward passes (dropout active at
 inference) and reports the per-edge standard deviation as an epistemic
 uncertainty estimate.
-Higher uncertainty on OOD pairs provides a safety signal for clinical use.
+Figure~\ref{fig:reliability} shows the reliability diagram: bars align
+closely to the diagonal (ECE\,=\,0.0156), confirming GCN+MLP is
+well-calibrated.
+Higher uncertainty on OOD pairs (Figure~\ref{fig:uncertainty}) provides a
+safety signal for clinical use.
+
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=\linewidth]{../results/reliability_diagram.png}
+  \caption{Reliability (calibration) diagram for GCN+MLP on the IID test set.
+           Bars close to the diagonal indicate good calibration
+           (ECE\,=\,0.0156).}
+  \label{fig:reliability}
+\end{figure}
 
 \subsection{OOD (cold-start) evaluation}
 
@@ -265,8 +278,8 @@ neighbours in the context graph (inductive message passing).
 \toprule
 Model & IID AUC & OOD AUC & $\Delta$ \\
 \midrule
-MLP      & 0.9660 & 0.5959 & $-0.370$ \\
-GCN+MLP  & 0.9675 & 0.8711 & $-0.096$ \\
+MLP      & 0.9660 & 0.6124 & $-0.354$ \\
+GCN+MLP  & 0.9675 & 0.8697 & $-0.098$ \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -278,6 +291,15 @@ GCN+MLP  & 0.9675 & 0.8711 & $-0.096$ \\
            degree to which each model relies on graph topology vs.\ molecular
            features alone.}
   \label{fig:ood}
+\end{figure}
+
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=\linewidth]{../results/uncertainty_comparison.png}
+  \caption{MC Dropout epistemic uncertainty (std over 20 passes) for IID vs.\
+           OOD test pairs (GCN+MLP). OOD pairs yield slightly higher
+           uncertainty, confirming MC Dropout as a deployment safety signal.}
+  \label{fig:uncertainty}
 \end{figure}
 
 % ─────────────────────────────────────────────────────────────────────────────
@@ -349,9 +371,10 @@ Our key findings are:
         Under the cold-start split, GNN models leverage the inductive
         message-passing mechanism to partially compensate for unseen drugs,
         while the MLP must rely purely on molecular features.
-  \item \textbf{GCN+MLP is well-calibrated} (low ECE) and the MC Dropout
-        uncertainty is elevated for OOD drug pairs, making it suitable as a
-        safety signal for clinical decision support.
+  \item \textbf{GCN+MLP is well-calibrated} (ECE\,=\,0.016, Figure~\ref{fig:reliability})
+        and MC Dropout uncertainty is measurably higher for OOD drug pairs
+        (Figure~\ref{fig:uncertainty}), making it suitable as a safety signal
+        for clinical decision support.
 \end{enumerate}
 
 \noindent\textbf{Limitations.}

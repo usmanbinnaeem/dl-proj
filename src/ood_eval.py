@@ -36,6 +36,7 @@ from torch_geometric.transforms import RandomLinkSplit
 sys.path.insert(0, os.path.dirname(__file__))
 from models import build_model
 from train import get_device
+from utils import mc_dropout_predict
 
 
 # ── OOD split ─────────────────────────────────────────────────────────────────
@@ -201,20 +202,23 @@ def _train_model(model_name: str, train_data, val_data, in_channels: int,
 def run_ood_evaluation(data: Data, iid_results: dict,
                        in_channels: int, data_dir: str = "data",
                        ood_fraction: float = 0.15,
-                       epochs: int = 150) -> dict:
+                       epochs: int = 150,
+                       iid_test_data=None) -> dict:
     """
     Compare IID (random split) vs OOD (cold-start) for MLP and GCN+MLP.
+    Also computes MC Dropout uncertainty on both IID and OOD test pairs
+    for GCN+MLP, exposing whether uncertainty is higher on OOD pairs.
 
     Parameters
     ----------
-    data        : full PyG Data object (all nodes + edges)
-    iid_results : dict returned by run_all_experiments (contains IID AUCs)
-    in_channels : node feature dimension
+    data          : full PyG Data object
+    iid_results   : dict from run_all_experiments (has IID AUCs)
+    in_channels   : node feature dim
+    iid_test_data : PyG Data for IID test set (needed for uncertainty comparison)
 
     Returns
     -------
-    dict with keys 'MLP_iid', 'MLP_ood', 'GCN+MLP_iid', 'GCN+MLP_ood'
-    and 'details' with per-model full result dicts
+    dict with keys per model + 'uncertainty' sub-dict
     """
     print("\n" + "=" * 60)
     print("OOD EVALUATION  (cold-start, 15% held-out nodes)")
@@ -258,6 +262,23 @@ def run_ood_evaluation(data: Data, iid_results: dict,
             "ood_ap":  float(ood_ap),
             "delta":   float(ood_auc - iid_auc),
         }
+
+        # ── MC Dropout uncertainty: IID vs OOD (GCN+MLP only) ────────────
+        if model_name == "GCN+MLP" and iid_test_data is not None:
+            device = get_device()
+            model.to(device)
+            print(f"\n  Computing MC Dropout uncertainty (20 passes) …")
+            _, iid_stds = mc_dropout_predict(model, iid_test_data, device, n_passes=20)
+            _, ood_stds = mc_dropout_predict(model, ood_test_data,  device, n_passes=20)
+            print(f"    IID mean uncertainty : {iid_stds.mean():.4f}")
+            print(f"    OOD mean uncertainty : {ood_stds.mean():.4f}")
+            print(f"    Ratio OOD/IID        : {ood_stds.mean() / (iid_stds.mean() + 1e-9):.2f}x")
+            results["uncertainty"] = {
+                "iid_mean_std": float(iid_stds.mean()),
+                "ood_mean_std": float(ood_stds.mean()),
+                "iid_stds":     iid_stds,
+                "ood_stds":     ood_stds,
+            }
 
     results["details"] = details
     return results

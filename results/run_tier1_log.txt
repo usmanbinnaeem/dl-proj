@@ -1,0 +1,65 @@
+Device: mps
+
+Loading dataset …
+Dataset: 1514 drugs, 48514 DDI edges
+Valid drugs (with SMILES): 1338 / 1514
+Valid DDI edges (both drugs have SMILES): 41820
+Split → train pos edges: 33456, val pos: 4182, test pos: 4182
+Nodes: 1338, Features: 2048
+
+Loaded IID results:
+  MLP           Test AUC=0.9660  Test AP=0.9584
+  GCN+Dot       Test AUC=0.8712  Test AP=0.8675
+  GCN+MLP       Test AUC=0.9675  Test AP=0.9655
+  GIN+Dot       Test AUC=0.8618  Test AP=0.8109
+  GIN+MLP       Test AUC=0.9606  Test AP=0.9541
+
+============================================================
+Retraining GCN+MLP for calibration/uncertainty analysis …
+============================================================
+  [GCN+MLP] Epoch   1 | Loss 0.6953 | Val AUC 0.8585 | Val AP 0.8504 | 0.6s
+  [GCN+MLP] Epoch  25 | Loss 0.3562 | Val AUC 0.9027 | Val AP 0.8864 | 4.7s
+  [GCN+MLP] Epoch  50 | Loss 0.3022 | Val AUC 0.9358 | Val AP 0.9238 | 9.0s
+  [GCN+MLP] Epoch  75 | Loss 0.2669 | Val AUC 0.9507 | Val AP 0.9430 | 13.4s
+  [GCN+MLP] Epoch 100 | Loss 0.2347 | Val AUC 0.9570 | Val AP 0.9506 | 17.6s
+  [GCN+MLP] Epoch 125 | Loss 0.2083 | Val AUC 0.9655 | Val AP 0.9620 | 21.9s
+  [GCN+MLP] Epoch 150 | Loss 0.1816 | Val AUC 0.9724 | Val AP 0.9714 | 26.2s
+
+============================================================
+CALIBRATION & UNCERTAINTY  (GCN+MLP)
+============================================================
+  ECE (deterministic)  : 0.0156
+  MC Dropout mean std  : 0.0518
+  Saved → results/calibration.csv
+Reliability diagram saved → results/reliability_diagram.png
+Model bundle saved → results/model_bundle.pt
+
+============================================================
+OOD EVALUATION
+============================================================
+
+============================================================
+OOD EVALUATION  (cold-start, 15% held-out nodes)
+============================================================
+OOD split: 1138 seen drugs, 200 held-out drugs, 1117 OOD test pairs (pos+neg each)
+
+  Training MLP on OOD split …
+  MLP         IID AUC=0.9660  OOD AUC=0.6124  Δ=-0.3536
+
+  Training GCN+MLP on OOD split …
+    [GCN+MLP] Early stop at epoch 22 (3s)
+  GCN+MLP     IID AUC=0.9675  OOD AUC=0.8697  Δ=-0.0978
+
+  Computing MC Dropout uncertainty (20 passes) …
+    IID mean uncertainty : 0.0160
+    OOD mean uncertainty : 0.0174
+    Ratio OOD/IID        : 1.09x
+OOD results saved → results/ood_results.csv
+OOD comparison plot saved → results/ood_comparison.png
+Uncertainty comparison plot saved → results/uncertainty_comparison.png
+
+[Skipped ablation studies]
+
+============================================================
+Done. All outputs saved to results/
+============================================================

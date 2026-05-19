@@ -68,6 +68,28 @@ def evaluate(model, data, device):
 
 # ── experiment runner ──────────────────────────────────────────────────────────
 
+def save_model_bundle(model, in_channels: int, drug_ids: list,
+                      graph_x, graph_edge_index,
+                      save_path: str = "results/model_bundle.pt"):
+    """
+    Persist everything needed for inference without retraining:
+      - model state dict
+      - in_channels (feature dim)
+      - drug_ids (list, index → DrugBank ID)
+      - graph_x / graph_edge_index for GCN context
+    """
+    import json
+    os.makedirs(os.path.dirname(save_path), exist_ok=True)
+    torch.save({
+        "state_dict":       model.state_dict(),
+        "in_channels":      in_channels,
+        "drug_ids":         drug_ids,
+        "graph_x":          graph_x.cpu(),
+        "graph_edge_index": graph_edge_index.cpu(),
+    }, save_path)
+    print(f"Model bundle saved → {save_path}")
+
+
 def run_experiment(
     model_name: str,
     train_data,

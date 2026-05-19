@@ -128,6 +128,99 @@ def expected_calibration_error(probs: np.ndarray, labels: np.ndarray,
     return float(ece)
 
 
+def plot_reliability_diagram(probs: np.ndarray, labels: np.ndarray,
+                              n_bins: int = 10,
+                              save_path: str = "results/reliability_diagram.png",
+                              ece: float = None):
+    """
+    Reliability (calibration) diagram.
+
+    Bars show the gap between mean predicted confidence and actual
+    accuracy inside each probability bin.  A perfectly calibrated
+    model has bars that touch the diagonal.
+    """
+    os.makedirs(os.path.dirname(save_path), exist_ok=True)
+    bins      = np.linspace(0.0, 1.0, n_bins + 1)
+    bin_accs  = []
+    bin_confs = []
+    bin_sizes = []
+
+    for i in range(n_bins):
+        lo, hi = bins[i], bins[i + 1]
+        mask   = (probs >= lo) & (probs < hi) if i < n_bins - 1 else (probs >= lo) & (probs <= hi)
+        if mask.sum() == 0:
+            bin_accs.append(0.0); bin_confs.append((lo + hi) / 2); bin_sizes.append(0)
+            continue
+        bin_accs.append(float(labels[mask].mean()))
+        bin_confs.append(float(probs[mask].mean()))
+        bin_sizes.append(int(mask.sum()))
+
+    bin_centers = [(bins[i] + bins[i + 1]) / 2 for i in range(n_bins)]
+    bar_width   = 1.0 / n_bins
+
+    fig, ax = plt.subplots(figsize=(6, 5))
+
+    # Accuracy bars
+    ax.bar(bin_centers, bin_accs, width=bar_width * 0.9,
+           color="#4daf4a", alpha=0.7, label="Accuracy", zorder=2)
+
+    # Gap overlay (where confidence > accuracy)
+    gap_top = [max(c, a) for c, a in zip(bin_confs, bin_accs)]
+    gap_bot = [min(c, a) for c, a in zip(bin_confs, bin_accs)]
+    ax.bar(bin_centers, [t - b for t, b in zip(gap_top, gap_bot)],
+           bottom=gap_bot, width=bar_width * 0.9,
+           color="#e41a1c", alpha=0.3, label="Gap", zorder=3)
+
+    # Perfect calibration diagonal
+    ax.plot([0, 1], [0, 1], "k--", linewidth=1.2, label="Perfect calibration")
+
+    title = "Reliability Diagram — GCN+MLP"
+    if ece is not None:
+        title += f"\nECE = {ece:.4f}"
+    ax.set_title(title, fontsize=12)
+    ax.set_xlabel("Predicted Confidence")
+    ax.set_ylabel("Empirical Accuracy")
+    ax.set_xlim(0, 1); ax.set_ylim(0, 1)
+    ax.legend(fontsize=9)
+    ax.grid(alpha=0.3, zorder=0)
+
+    plt.tight_layout()
+    plt.savefig(save_path, dpi=150, bbox_inches="tight")
+    plt.close()
+    print(f"Reliability diagram saved → {save_path}")
+
+
+def plot_uncertainty_comparison(iid_stds: np.ndarray, ood_stds: np.ndarray,
+                                 save_path: str = "results/uncertainty_comparison.png"):
+    """
+    Side-by-side histogram of MC Dropout std for IID test pairs vs OOD test pairs.
+    Higher uncertainty on OOD validates MC Dropout as a safety detector.
+    """
+    os.makedirs(os.path.dirname(save_path), exist_ok=True)
+    fig, ax = plt.subplots(figsize=(7, 4))
+
+    bins = np.linspace(0, max(iid_stds.max(), ood_stds.max()) + 0.01, 40)
+    ax.hist(iid_stds, bins=bins, alpha=0.65, color="#4daf4a",
+            label=f"IID  (mean={iid_stds.mean():.4f})", density=True)
+    ax.hist(ood_stds, bins=bins, alpha=0.65, color="#e41a1c",
+            label=f"OOD  (mean={ood_stds.mean():.4f})", density=True)
+
+    ax.axvline(iid_stds.mean(), color="#4daf4a", linestyle="--", linewidth=1.5)
+    ax.axvline(ood_stds.mean(), color="#e41a1c", linestyle="--", linewidth=1.5)
+
+    ax.set_title("MC Dropout Uncertainty: IID vs OOD Drug Pairs\nGCN+MLP, 20 forward passes",
+                 fontsize=11)
+    ax.set_xlabel("Epistemic Uncertainty (std across passes)")
+    ax.set_ylabel("Density")
+    ax.legend(fontsize=10)
+    ax.grid(alpha=0.3)
+
+    plt.tight_layout()
+    plt.savefig(save_path, dpi=150, bbox_inches="tight")
+    plt.close()
+    print(f"Uncertainty comparison plot saved → {save_path}")
+
+
 # ── MC Dropout uncertainty ─────────────────────────────────────────────────────
 
 def mc_dropout_predict(model, data, device, n_passes: int = 20):
